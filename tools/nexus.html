@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NEXUS • Enterprise P2P Lattice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    :root {
+        --primary: #3b82f6;
+        --accent: #6366f1;
+        --success: #10b981;
+        --bg: #0f172a;
+        --card: #1e2937;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        background: var(--bg);
+        color: #e2e8f0;
+        font-family: 'Inter', system-ui, sans-serif;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .topbar {
+        background: #1e2937;
+        border-bottom: 1px solid #334155;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        justify-content: space-between;
+    }
+    .logo { font-weight: 700; font-size: 24px; }
+    .logo span { color: var(--primary); }
+
+    .tabs {
+        display: flex;
+        background: #1e2937;
+        border-bottom: 1px solid #334155;
+    }
+    .tab {
+        padding: 16px 28px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+    }
+    .tab.active {
+        border-bottom: 3px solid var(--accent);
+        color: white;
+        background: #0f172a;
+    }
+
+    .content {
+        display: none;
+        height: calc(100vh - 128px);
+        padding: 24px;
+        overflow: auto;
+    }
+    .content.active { display: block; }
+
+    .card {
+        background: var(--card);
+        border-radius: 12px;
+        border: 1px solid #334155;
+        padding: 20px;
+    }
+
+    #layer1 { background: linear-gradient(135deg, #1e3a8a, #312e81); color: white; }
+    
+    canvas { border-radius: 12px; background: #0f172a; }
+    
+    .bit-grid {
+        display: grid;
+        grid-template-columns: repeat(11, 1fr);
+        gap: 8px;
+    }
+    .bit {
+        padding: 16px 8px;
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        background: #1e2937;
+        border: 2px solid #475569;
+        border-radius: 8px;
+    }
+    .bit.active {
+        background: #6366f1;
+        border-color: #818cf8;
+        color: white;
+        box-shadow: 0 0 15px rgba(99,102,241,0.6);
+    }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">NEXUS <span>Enterprise</span></div>
+    <div style="display:flex; gap:24px; align-items:center;">
+        <div>Node: <strong id="node-id">0x7FF</strong></div>
+        <div style="color:#10b981"><i class="fas fa-circle"></i> LIVE • 47 Peers</div>
+    </div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchLayer(1)">Layer 1 — Executive Overview</div>
+    <div class="tab" onclick="switchLayer(2)">Layer 0.01 — Operations</div>
+    <div class="tab" onclick="switchLayer(3)">Layer 0.02 — 11-Bit Lattice</div>
+</div>
+
+<!-- ==================== LAYER 1 ==================== -->
+<div id="layer-1" class="content active">
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px;">
+        <div class="card">
+            <h3>Network Health</h3>
+            <div style="font-size:48px; font-weight:700; color:#10b981;">98.7%</div>
+            <p>47 active peers • 0 degraded</p>
+        </div>
+        <div class="card">
+            <h3>Root Node Status</h3>
+            <div style="font-size:32px; color:#a855f7;">0x7FF — FULL AUTHORITY</div>
+        </div>
+        <div class="card">
+            <h3>11-Bit Utilization</h3>
+            <div style="font-size:32px;">87.4%</div>
+        </div>
+    </div>
+    <div class="card" style="margin-top:24px;">
+        <h3>Global P2P Topology</h3>
+        <canvas id="overview-canvas" width="1200" height="380"></canvas>
+    </div>
+</div>
+
+<!-- ==================== LAYER 0.01 ==================== -->
+<div id="layer-2" class="content">
+    <div class="card">
+        <h3>Operational Controls</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button onclick="randomWalk()" style="padding:12px 20px;">Random Network Walk</button>
+            <button onclick="goToRoot()" style="padding:12px 20px; background:#6366f1; color:white;">Promote to Root</button>
+            <button onclick="resetNetwork()" style="padding:12px 20px;">Reset Simulation</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== LAYER 0.02 ==================== -->
+<div id="layer-3" class="content">
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:24px;">
+        <div class="card">
+            <h3>11-Bit P2P Lattice Explorer</h3>
+            <canvas id="network-canvas" width="900" height="520"></canvas>
+        </div>
+        
+        <div>
+            <div class="card">
+                <h3>Identity Controller</h3>
+                <div id="bit-grid" class="bit-grid"></div>
+                <div style="margin-top:16px; text-align:center;">
+                    <strong>Current Node ID:</strong> <span id="node-id-2" style="font-family:monospace; color:#a855f7;">0x7FF</span>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top:20px;">
+                <h3>Live Log</h3>
+                <div id="console" style="height:320px; overflow-y:auto; font-family:monospace; font-size:13px; background:#0f172a; padding:12px; border-radius:8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================ 3-LAYER CORPORATE DASHBOARD ================
+let myID = 0x7FF;
+let peers = new Map();
+let connections = [];
+
+const canvas = document.getElementById('network-canvas');
+const ctx = canvas.getContext('2d');
+
+function log(msg, type = '') {
+    const consoleEl = document.getElementById('console');
+    const entry = document.createElement('div');
+    const time = new Date().toLocaleTimeString('en-US',{hour:'2-digit', minute:'2-digit'});
+    entry.innerHTML = `<span style="color:#64748b">[${time}]</span> ${msg}`;
+    if (type) entry.style.color = type === 'success' ? '#10b981' : '#a855f7';
+    consoleEl.appendChild(entry);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+
+function toBinary(n) { return n.toString(2).padStart(11, '0'); }
+
+function updateBitGrid() {
+    const grid = document.getElementById('bit-grid');
+    grid.innerHTML = '';
+    const bin = toBinary(myID);
+    for (let i = 0; i < 11; i++) {
+        const bit = document.createElement('div');
+        bit.className = 'bit';
+        bit.textContent = bin[i];
+        if (bin[i] === '1') bit.classList.add('active');
+        bit.onclick = () => flipBit(10-i);
+        grid.appendChild(bit);
+    }
+    document.getElementById('node-id').textContent = `0x${myID.toString(16).toUpperCase().padStart(3,'0')}`;
+    document.getElementById('node-id-2').textContent = `0x${myID.toString(16).toUpperCase().padStart(3,'0')}`;
+}
+
+function drawNetwork() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 520;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = 'rgba(99, 102, 241, 0.25)';
+    connections.forEach(c => {
+        const a = peers.get(c.from);
+        const b = peers.get(c.to);
+        if (a && b) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+        }
+    });
+
+    peers.forEach((peer, id) => {
+        const isRoot = id === 0x7FF;
+        ctx.fillStyle = isRoot ? '#c026d3' : '#60a5fa';
+        ctx.shadowBlur = isRoot ? 40 : 20;
+        ctx.shadowColor = isRoot ? '#c026d3' : '#60a5fa';
+        ctx.beginPath();
+        ctx.arc(peer.x, peer.y, isRoot ? 12 : 7, 0, Math.PI*2);
+        ctx.fill();
+    });
+}
+
+function addPeer() {
+    const id = Math.floor(Math.random() * 2048);
+    if (peers.has(id)) return;
+    peers.set(id, { x: Math.random()*canvas.width, y: Math.random()*canvas.height*0.8 + 60 });
+    if (Math.random() > 0.4) connections.push({from: myID, to: id});
+}
+
+function flipBit(bit) {
+    myID = myID ^ (1 << bit);
+    updateBitGrid();
+    drawNetwork();
+    log(`Bit ${bit} flipped → New ID <strong>0x${myID.toString(16).toUpperCase().padStart(3,'0')}</strong>`);
+}
+
+function goToRoot() {
+    myID = 0x7FF;
+    updateBitGrid();
+    drawNetwork();
+    log('Promoted to <strong>ROOT NODE 0x7FF</strong> — Full network authority', 'success');
+}
+
+function randomWalk() {
+    log('Starting network exploration...', 'success');
+    for (let i = 0; i < 9; i++) {
+        setTimeout(() => flipBit(Math.floor(Math.random()*11)), i*110);
+    }
+}
+
+function resetNetwork() {
+    peers.clear();
+    connections = [];
+    for (let i = 0; i < 52; i++) addPeer();
+    log('Network simulation reset', 'success');
+    drawNetwork();
+}
+
+function switchLayer(n) {
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`layer-${n}`).classList.add('active');
+    document.querySelectorAll('.tab')[n-1].classList.add('active');
+    
+    if (n === 3) setTimeout(drawNetwork, 100);
+}
+
+function init() {
+    for (let i = 0; i < 52; i++) addPeer();
+    
+    updateBitGrid();
+    drawNetwork();
+    
+    // Gentle animation
+    setInterval(() => {
+        peers.forEach(p => {
+            p.x += (Math.random()-0.5)*1.2;
+            p.y += (Math.random()-0.5)*0.8;
+        });
+        drawNetwork();
+    }, 80);
+
+    log('NEXUS Enterprise Platform Online', 'success');
+    log('Root Node 0x7FF — Layer 0.02 Active', 'success');
+}
+
+init();
+</script>
+</body>
+</html>

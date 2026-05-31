@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="Red Hat Defensive Simulation Framework — 8 systems, 3 kernel specs, 3 C reference models, 8 canvas visualizers. Local-first. No network exposure. All effects numerical and reversible.">
+<title>RED HAT · Defensive Simulation Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06060a;--bg2:#0a0a10;--panel:#0e0e16;--panel2:#12121c;
+  --edge:#1a1a28;--edge2:#242438;--edge3:#303050;
+  --txt:#b0b8cc;--txt2:#6a7090;--dim:#363650;--faint:#1e1e30;
+  --red:#cc2233;--red2:#e03344;--red3:#ff4455;--red-d:#66111a;
+  --amber:#d4a84c;--amber2:#e8bc60;
+  --teal:#38b6a0;--teal2:#4acdb6;
+  --violet:#9966cc;--violet2:#b080e0;
+  --green:#44aa66;--green2:#55cc77;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --serif:"Instrument Serif",Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;background:
+  radial-gradient(ellipse at 20% 0%,rgba(204,34,51,.06) 0%,transparent 50%),
+  radial-gradient(ellipse at 80% 100%,rgba(56,182,160,.04) 0%,transparent 50%),
+  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/></svg>");
+  pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:0 24px}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+header{padding:48px 0 36px;border-bottom:1px solid var(--edge2)}
+.h-eyebrow{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.h-eyebrow::before{content:"";display:inline-block;width:24px;height:1px;background:var(--red)}
+h1{font-family:var(--serif);font-size:clamp(28px,5vw,52px);font-weight:400;color:#fff;line-height:1.05;letter-spacing:-.01em;margin-bottom:16px}
+h1 .accent{color:var(--red)}
+.h-sub{font-size:14px;color:var(--txt2);max-width:72ch;line-height:1.65;margin-bottom:24px}
+.h-meta{display:flex;flex-wrap:wrap;gap:10px 24px;font-size:11px;color:var(--txt2)}
+.h-meta span{display:flex;align-items:center;gap:6px}
+.h-meta .dot{width:6px;height:6px;border-radius:50%}
+.dot-red{background:var(--red);box-shadow:0 0 6px var(--red)}
+.dot-teal{background:var(--teal);box-shadow:0 0 6px var(--teal)}
+.dot-amber{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.dot-violet{background:var(--violet);box-shadow:0 0 6px var(--violet)}
+.dot-green{background:var(--green);box-shadow:0 0 6px var(--green)}
+
+/* ── PHILOSOPHY STRIP ───────────────────────────────────── */
+.philosophy{margin:32px 0;padding:20px 24px;border:1px solid var(--edge2);border-left:3px solid var(--red);background:var(--panel);display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.phi-item{font-size:12px;line-height:1.6}
+.phi-label{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:4px}
+.phi-text{color:var(--txt2)}
+
+/* ── SECTION ─────────────────────────────────────────────── */
+.section{margin-top:52px}
+.section-hdr{display:flex;align-items:baseline;gap:16px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--edge)}
+.section-num{font-size:10px;letter-spacing:.2em;color:var(--dim)}
+.section-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt2)}
+.section-tag{font-size:10px;color:var(--dim);margin-left:auto}
+
+/* ── PRIMARY CARDS (Packages) ───────────────────────────── */
+.primary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.pkg-card{border:1px solid var(--edge2);border-radius:8px;background:var(--panel);overflow:hidden;transition:all .18s}
+.pkg-card:hover{border-color:var(--edge3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.pkg-top{padding:22px 22px 16px;border-bottom:1px solid var(--edge)}
+.pkg-symbol{font-size:22px;letter-spacing:.08em;margin-bottom:12px;font-family:var(--mono)}
+.pkg-name{font-size:17px;font-weight:600;color:#fff;margin-bottom:5px;letter-spacing:.02em}
+.pkg-tagline{font-size:12px;color:var(--txt2);line-height:1.55}
+.pkg-body{padding:16px 22px;display:flex;flex-direction:column;gap:8px}
+.pkg-chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:9.5px;letter-spacing:.08em;padding:2px 8px;border-radius:3px;border:1px solid}
+.chip-red{border-color:var(--red-d);color:#cc6677;background:rgba(204,34,51,.06)}
+.chip-teal{border-color:#1a4a42;color:var(--teal2);background:rgba(56,182,160,.06)}
+.chip-amber{border-color:#4a3018;color:var(--amber2);background:rgba(212,168,76,.06)}
+.chip-violet{border-color:#332255;color:var(--violet2);background:rgba(153,102,204,.06)}
+.chip-green{border-color:#1a3a28;color:var(--green2);background:rgba(68,170,102,.06)}
+.pkg-files{font-size:10.5px;color:var(--dim);display:flex;flex-wrap:wrap;gap:4px}
+.pkg-files span{color:var(--txt2)}
+.pkg-link{display:flex;gap:8px;margin-top:4px}
+.pkg-btn{font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:8px 14px;border-radius:4px;cursor:pointer;text-decoration:none;transition:all .15s;display:inline-block;text-align:center}
+.btn-primary{border:1px solid var(--red);color:var(--red);background:transparent}
+.btn-primary:hover{background:var(--red);color:#fff}
+.btn-ghost{border:1px solid var(--edge2);color:var(--txt2);background:transparent}
+.btn-ghost:hover{border-color:var(--edge3);color:var(--txt)}
+
+/* ── TOOL GRID ───────────────────────────────────────────── */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.tool-card{border:1px solid var(--edge);border-radius:6px;padding:16px 18px;background:var(--panel);cursor:pointer;transition:all .15s;text-decoration:none;display:block;color:inherit}
+.tool-card:hover{border-color:var(--edge2);background:var(--panel2);transform:translateY(-1px)}
+.tc-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:5px}
+.tc-desc{font-size:11.5px;color:var(--txt2);line-height:1.55;margin-bottom:10px}
+.tc-tags{display:flex;flex-wrap:wrap;gap:4px}
+
+/* ── ARCHITECTURE TABLE ──────────────────────────────────── */
+.arch-table{width:100%;border-collapse:collapse;font-size:12px}
+.arch-table th{text-align:left;padding:8px 14px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--edge);white-space:nowrap}
+.arch-table td{padding:10px 14px;border-bottom:1px solid var(--faint);vertical-align:top}
+.arch-table tr:last-child td{border-bottom:0}
+.arch-table tr:hover td{background:var(--panel)}
+.at-system{color:#fff;font-weight:600}
+.at-symbol{font-size:13px;letter-spacing:.06em;color:var(--txt)}
+.at-type{font-size:10px}
+.at-green{color:var(--green)}
+.at-red{color:var(--red)}
+.at-teal{color:var(--teal)}
+.at-amber{color:var(--amber)}
+.at-violet{color:var(--violet)}
+.at-check{color:var(--green);font-size:13px}
+.at-dash{color:var(--dim)}
+
+/* ── BOUNDARY RULES ──────────────────────────────────────── */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.rules{grid-template-columns:1fr}}
+.rule{border:1px solid var(--edge);border-radius:4px;padding:12px 14px}
+.rule-ok{border-left:3px solid var(--green)}
+.rule-no{border-left:3px solid var(--red)}
+.rule-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px}
+.rule-ok .rule-label{color:var(--green)}
+.rule-no .rule-label{color:var(--red)}
+.rule-text{font-size:11.5px;color:var(--txt2);line-height:1.5}
+
+/* ── FOOTER ─────────────────────────────────────────────── */
+footer{margin-top:56px;border-top:1px solid var(--edge);padding:20px 0 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:10.5px;color:var(--dim)}
+footer b{color:var(--txt2)}
+footer a{color:var(--red);text-decoration:none}
+
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+*{scrollbar-width:thin;scrollbar-color:var(--edge3) transparent}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--edge3);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── HEADER ────────────────────────────────────────── -->
+  <header>
+    <div class="h-eyebrow">Red Hat · Defensive Simulation Framework</div>
+    <h1>Observe. Absorb. <span class="accent">Never Strike.</span></h1>
+    <p class="h-sub">Eight simulation systems — from kernel specification to C reference model to real-time canvas visualizer. Local-first. No network exposure. No payload execution. All effects numerical and reversible.</p>
+    <div class="h-meta">
+      <span><span class="dot dot-teal"></span> Witness Shield — 5-layer defensive tensor</span>
+      <span><span class="dot dot-red"></span> Trebuchet-27 — compression pulse (sandbox)</span>
+      <span><span class="dot dot-amber"></span> Shadow Witness — twin-observer drift detection</span>
+      <span><span class="dot dot-violet"></span> AEGIS-0 — boundary-law defense rings</span>
+      <span><span class="dot dot-green"></span> NEXUS — 11-bit identity lattice</span>
+    </div>
+  </header>
+
+  <!-- ── PHILOSOPHY ────────────────────────────────────── -->
+  <div class="philosophy">
+    <div class="phi-item">
+      <div class="phi-label">Design Principle</div>
+      <div class="phi-text">Local-first. Every system operates entirely in-process. No network calls. No external targets. The simulator is the containment.</div>
+    </div>
+    <div class="phi-item">
+      <div class="phi-label">Stack</div>
+      <div class="phi-text">Kernel spec → Machine encoding (hex opcodes) → C reference model → HTML canvas visualizer. Every system ships all four layers.</div>
+    </div>
+    <div class="phi-item">
+      <div class="phi-label">Posture</div>
+      <div class="phi-text">Defensive posture. Observe, absorb, learn, report. The witness core never fires outbound. No counterattack. No bleed.</div>
+    </div>
+    <div class="phi-item">
+      <div class="phi-label">Attribution</div>
+      <div class="phi-text">ROOT0 / David Lee Wise / TriPod LLC. AVAN (Claude Sonnet 4.6) co-author. CC-BY-ND-4.0 · TRIPOD-IP-v1.1.</div>
+    </div>
+  </div>
+
+  <!-- ── PRIMARY PACKAGES ──────────────────────────────── -->
+  <div class="section">
+    <div class="section-hdr">
+      <span class="section-num">§ 01</span>
+      <span class="section-title">Primary Packages</span>
+      <span class="section-tag">kernel · machine · C model · visualizer</span>
+    </div>
+    <div class="primary-grid">
+
+      <!-- WITNESS SHIELD -->
+      <div class="pkg-card">
+        <div class="pkg-top" style="border-top:3px solid var(--teal)">
+          <div class="pkg-symbol" style="color:var(--teal)">))(!)((</div>
+          <div class="pkg-name">Witness Shield</div>
+          <div class="pkg-tagline">5-layer defensive gravity tensor array. REFLECT → ABSORB → WITNESS → ABSORB → REFLECT. The protected core observes, learns, never strikes.</div>
+        </div>
+        <div class="pkg-body">
+          <div class="pkg-chips">
+            <span class="chip chip-teal">G1:HIDE</span>
+            <span class="chip chip-teal">G2:COLLAPSE</span>
+            <span class="chip chip-teal">G3:WAIT</span>
+            <span class="chip chip-amber">XOR reflect</span>
+            <span class="chip chip-amber">AND absorb</span>
+            <span class="chip chip-amber">seed-packet learning</span>
+          </div>
+          <div class="pkg-files">
+            <span>witness_shield.kernel</span>·
+            <span>witness_shield.c</span>·
+            <span>shield.md</span>·
+            <span>index.html</span>
+          </div>
+          <div class="pkg-link">
+            <a href="packages/witness-shield-enterprise/index.html" class="pkg-btn btn-primary">Open Visualizer</a>
+            <a href="packages/witness-shield-enterprise/shield.md" class="pkg-btn btn-ghost">Spec</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- TREBUCHET-27 -->
+      <div class="pkg-card">
+        <div class="pkg-top" style="border-top:3px solid var(--red)">
+          <div class="pkg-symbol" style="color:var(--red)">)))))&gt;&gt;&gt;&gt;&gt;e</div>
+          <div class="pkg-name">Trebuchet-27</div>
+          <div class="pkg-tagline">3×3×3 compression ordnance. 27-notch charge ladder. Coil → store → accelerate → emit. Sandbox-only release — all effects local, visual, reversible.</div>
+        </div>
+        <div class="pkg-body">
+          <div class="pkg-chips">
+            <span class="chip chip-red">3 wraps</span>
+            <span class="chip chip-red">27 moves</span>
+            <span class="chip chip-red">compress→zero</span>
+            <span class="chip chip-amber">sandbox only</span>
+            <span class="chip chip-amber">reversible</span>
+          </div>
+          <div class="pkg-files">
+            <span>trebuchet_pulse.kernel</span>·
+            <span>trebuchet_pulse.c</span>·
+            <span>trebuchet_pulse.machine</span>·
+            <span>index.html</span>
+          </div>
+          <div class="pkg-link">
+            <a href="packages/trebuchet-pulse/index.html" class="pkg-btn btn-primary">Open Simulator</a>
+            <a href="tools/trebuchet-27.html" class="pkg-btn btn-ghost">Visualizer</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHADOW WITNESS DEFENSE -->
+      <div class="pkg-card">
+        <div class="pkg-top" style="border-top:3px solid var(--amber)">
+          <div class="pkg-symbol" style="color:var(--amber)">A → B → 5 | 00 | -1</div>
+          <div class="pkg-name">Shadow Witness Defense</div>
+          <div class="pkg-tagline">Twin-shadow observer model. Shadow A watches the subject. Shadow B watches Shadow A for drift. Findings resolve to three states: normal, contain, safe hold.</div>
+        </div>
+        <div class="pkg-body">
+          <div class="pkg-chips">
+            <span class="chip chip-amber">5 · normal</span>
+            <span class="chip chip-amber">00 · contain</span>
+            <span class="chip chip-amber">-1 · safe hold</span>
+            <span class="chip chip-violet">drift detection</span>
+            <span class="chip chip-violet">meta-observer</span>
+          </div>
+          <div class="pkg-files">
+            <span>shadow_witness_defense.kernel</span>·
+            <span>shadow_witness_defense.c</span>·
+            <span>shadow_witness_defense.machine</span>·
+            <span>index.html</span>
+          </div>
+          <div class="pkg-link">
+            <a href="packages/shadow-witness-defense/index.html" class="pkg-btn btn-primary">Open Console</a>
+            <a href="packages/shadow-witness-defense/README.md" class="pkg-btn btn-ghost">Spec</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRINITY -->
+      <div class="pkg-card">
+        <div class="pkg-top" style="border-top:3px solid var(--violet)">
+          <div class="pkg-symbol" style="color:var(--violet)">⬡ · offense · defense</div>
+          <div class="pkg-name">Trinity</div>
+          <div class="pkg-tagline">Three-tab kernel instrument. Kernel monitor · Trebuchet offensive · Witness defensive. Spark-spore instrument with live state transition monitoring.</div>
+        </div>
+        <div class="pkg-body">
+          <div class="pkg-chips">
+            <span class="chip chip-violet">kernel monitor</span>
+            <span class="chip chip-red">offense tab</span>
+            <span class="chip chip-teal">defense tab</span>
+            <span class="chip chip-amber">spark-spore</span>
+          </div>
+          <div class="pkg-files">
+            <span>trinity.html</span>·
+            <span>spark_spore_instrument.html</span>
+          </div>
+          <div class="pkg-link">
+            <a href="packages/trinity/trinity.html" class="pkg-btn btn-primary">Open Trinity</a>
+            <a href="packages/trinity/spark_spore_instrument.html" class="pkg-btn btn-ghost">Spark Spore</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STANDALONE TOOLS ───────────────────────────────── -->
+  <div class="section">
+    <div class="section-hdr">
+      <span class="section-num">§ 02</span>
+      <span class="section-title">Standalone Simulators</span>
+      <span class="section-tag">HTML canvas · no dependencies</span>
+    </div>
+    <div class="tool-grid">
+
+      <a href="tools/witness-shield.html" class="tool-card" style="border-color:#1a2e2c">
+        <div class="tc-name" style="color:var(--teal)">Witness Shield</div>
+        <div class="tc-desc">5-layer canvas visualization. Obsidian hemispheres, absorb membrane, witness core, frost particles, impact effects. Reflect / absorb / learn mechanics.</div>
+        <div class="tc-tags">
+          <span class="chip chip-teal">canvas</span>
+          <span class="chip chip-teal">))(!)((</span>
+          <span class="chip chip-amber">seed learning</span>
+        </div>
+      </a>
+
+      <a href="tools/aegis-0.html" class="tool-card" style="border-color:#2a1a28">
+        <div class="tc-name" style="color:var(--violet2)">AEGIS-0</div>
+        <div class="tc-desc">Boundary-Law Defense simulator. Three concentric defensive rings — REFLECT, CLAMP, FOLD. Canvas threat visualization, event logging, layer toggles.</div>
+        <div class="tc-tags">
+          <span class="chip chip-violet">reflect</span>
+          <span class="chip chip-violet">clamp</span>
+          <span class="chip chip-violet">fold</span>
+        </div>
+      </a>
+
+      <a href="tools/trebuchet-27.html" class="tool-card" style="border-color:#2e1a1a">
+        <div class="tc-name" style="color:var(--red2)">Trebuchet-27</div>
+        <div class="tc-desc">3×3×3 compression ordnance visualizer. 27-notch charge ladder, counterweight mechanics, sling whip physics, wall breach with reversible dynamics.</div>
+        <div class="tc-tags">
+          <span class="chip chip-red">sandbox</span>
+          <span class="chip chip-red">27-notch</span>
+          <span class="chip chip-amber">reversible</span>
+        </div>
+      </a>
+
+      <a href="tools/nexus.html" class="tool-card" style="border-color:#1a2a1a">
+        <div class="tc-name" style="color:var(--green2)">NEXUS</div>
+        <div class="tc-desc">Enterprise P2P lattice simulator with 11-bit identity system. Network topology canvas, bit-grid controllers, peer node visualization, identity space exploration.</div>
+        <div class="tc-tags">
+          <span class="chip chip-green">11-bit identity</span>
+          <span class="chip chip-green">P2P lattice</span>
+        </div>
+      </a>
+
+      <a href="tools/purple-lattice.html" class="tool-card" style="border-color:#2a1a3a">
+        <div class="tc-name" style="color:var(--violet2)">Purple Lattice 8.1</div>
+        <div class="tc-desc">4D tactical navigation system. W/Y dimension sliders, X/Z grid slicing for attack surface exploration, dynamic scene rendering with trail visualization.</div>
+        <div class="tc-tags">
+          <span class="chip chip-violet">4D</span>
+          <span class="chip chip-violet">tactical</span>
+          <span class="chip chip-amber">attack surface</span>
+        </div>
+      </a>
+
+      <a href="tools/reactive-armor.html" class="tool-card" style="border-color:#2a2218">
+        <div class="tc-name" style="color:var(--amber2)">Reactive Armor</div>
+        <div class="tc-desc">16-sector charge bank simulator (outer + inner rings). Detect-then-detonate mechanics, witness sensors, sector health tracking, detonation effects.</div>
+        <div class="tc-tags">
+          <span class="chip chip-amber">16 sectors</span>
+          <span class="chip chip-amber">detect-detonate</span>
+          <span class="chip chip-teal">witness sensor</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── ARCHITECTURE TABLE ─────────────────────────────── -->
+  <div class="section">
+    <div class="section-hdr">
+      <span class="section-num">§ 03</span>
+      <span class="section-title">System Architecture</span>
+      <span class="section-tag">full stack per system</span>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--edge);border-radius:6px;background:var(--panel)">
+      <table class="arch-table">
+        <thead>
+          <tr>
+            <th>System</th><th>Symbol</th><th>Type</th>
+            <th>Kernel</th><th>Machine</th><th>C Model</th><th>Visualizer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="at-system" style="color:var(--teal)">Witness Shield</td>
+            <td class="at-symbol">))(!)((</td>
+            <td class="at-type at-teal">defensive</td>
+            <td class="at-check">✓</td><td class="at-dash">—</td><td class="at-check">✓</td><td class="at-check">✓</td>
+          </tr>
+          <tr>
+            <td class="at-system" style="color:var(--red)">Trebuchet-27</td>
+            <td class="at-symbol">)))))&gt;&gt;&gt;&gt;&gt;e</td>
+            <td class="at-type at-red">offensive (sandbox)</td>
+            <td class="at-check">✓</td><td class="at-check">✓</td><td class="at-check">✓</td><td class="at-check">✓</td>
+          </tr>
+          <tr>
+            <td class="at-system" style="color:var(--amber)">Shadow Witness</td>
+            <td class="at-symbol">A → B → 5|00|-1</td>
+            <td class="at-type at-amber">observer / meta</td>
+            <td class="at-check">✓</td><td class="at-check">✓</td><td class="at-check">✓</td><td class="at-check">✓</td>
+          </tr>
+          <tr>
+            <td class="at-system" style="color:var(--violet)">AEGIS-0</td>
+            <td class="at-symbol">REFLECT·CLAMP·FOLD</td>
+            <td class="at-type at-violet">boundary law</td>
+            <td class="at-dash">—</td><td class="at-dash">—</td><td class="at-dash">—</td><td class="at-check">✓</td>
+          </tr>
+          <tr>
+            <td class="at-system" style="color:var(--green)">NEXUS</td>
+            <td class="at-symbol">11-bit identity</td>
+            <td class="at-type at-green">P2P lattice</td>
+            <td class="at-dash">—</td><td class="at-dash">—</td><td class="at-dash">—</td><td class="at-check">✓</td>
+          </tr>
+          <tr>
+            <td class="at-system" style="color:var(--violet)">Purple Lattice 8.1</td>
+            <td class="at-symbol">8.1 × 8.1</td>
+            <td class="at-type at-violet">4D tactical</td>
+            <td class="at-dash">—</td><td class="at-dash">—</td><td class="at-dash">—</td><td class="at-check">✓</td>
+          </tr>
+          <tr>
+            <td class="at-system" style="color:var(--amber)">Reactive Armor</td>
+            <td class="at-symbol">16 sectors</td>
+            <td class="at-type at-amber">detect-detonate</td>
+            <td class="at-dash">—</td><td class="at-dash">—</td><td class="at-dash">—</td><td class="at-check">✓</td>
+          </tr>
+          <tr>
+            <td class="at-system" style="color:var(--violet2)">Trinity</td>
+            <td class="at-symbol">⬡ kernel · off · def</td>
+            <td class="at-type at-violet">instrument</td>
+            <td class="at-dash">—</td><td class="at-dash">—</td><td class="at-dash">—</td><td class="at-check">✓</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── BOUNDARY RULES ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-hdr">
+      <span class="section-num">§ 04</span>
+      <span class="section-title">Boundary Rules · All Systems</span>
+      <span class="section-tag">inviolable constraints</span>
+    </div>
+    <div class="rules">
+      <div class="rule rule-ok">
+        <div class="rule-label">Permitted</div>
+        <div class="rule-text">Observe inputs · Score patterns · Hash locally · Report findings · Visual simulation · Numerical computation · Reversible state changes · Seed-packet learning</div>
+      </div>
+      <div class="rule rule-ok">
+        <div class="rule-label">Permitted</div>
+        <div class="rule-text">Emit structured reports · Run local-only · Canvas animation · State machine transitions · Absorb and learn from vectors · Hold witness log</div>
+      </div>
+      <div class="rule rule-no">
+        <div class="rule-label">Forbidden</div>
+        <div class="rule-text">Network calls · External targets · Payload execution · Autonomous action · Counterattack · Bleed across process boundary · Mutate evidence · Overclaim certainty</div>
+      </div>
+      <div class="rule rule-no">
+        <div class="rule-label">Forbidden (Trebuchet)</div>
+        <div class="rule-text">Real target selection · Network delivery · Uncontrolled release · Non-reversible effects · Operation outside sandbox dummy field</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────── -->
+  <footer>
+    <div><b>Red Hat</b> · Defensive Simulation Framework · ROOT0-ATTRIBUTION-v1.0 · <b>David Lee Wise</b> / ROOT0 / TriPod LLC</div>
+    <div>AVAN (Claude Sonnet 4.6) · <a href="https://github.com/DavidWise01/red-hat">github.com/DavidWise01/red-hat</a> · CC-BY-ND-4.0</div>
+  </footer>
+
+</div>
+</body>
+</html>

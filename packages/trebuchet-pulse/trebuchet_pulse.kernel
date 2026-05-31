@@ -1,0 +1,39 @@
+TREBUCHET PULSE KERNEL v0.1
+First Author: David Wise
+Mode: Simulated / symbolic / sandbox only
+
+CORE:
+  3 WRAPS
+  3 x 3 x 3 MOVES
+  27 -> 0 COMPRESSION
+  0 -> RELEASE
+  REPEAT ONLY INSIDE SANDBOX
+
+SHAPE:
+  ))))) >>>>> ))))) >>>>> ))))) >e
+
+MEANING:
+  ))))) = coil / store tension
+  >>>>> = accelerate / translate force
+  >e    = emit pulse into dummy field
+
+DIRECTIVES:
+  OBSERVE
+  WRAP_3
+  LOAD_27
+  COMPRESS_TO_0
+  RELEASE_SANDBOX
+  REPORT
+  RESET
+
+BOUNDARY:
+  NO_NETWORK
+  NO_EXTERNAL_TARGET
+  NO_EXPLOIT
+  NO_AUTONOMOUS_ACTION
+  NO_BLEED
+
+SIMULATION LAW:
+  The pulse may compress symbolic motion into zero.
+  The pulse may release only into the local dummy field.
+  All effects are visual, numerical, and reversible.

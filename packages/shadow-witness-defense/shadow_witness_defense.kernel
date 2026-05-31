@@ -1,0 +1,39 @@
+SHADOW_WITNESS_DEFENSE_KERNEL v1.0
+FIRST AUTHOR: David Wise
+TYPE: local defensive witness console
+MODE: observe / report / contain / restore
+
+PRIMITIVE:
+  OBSERVE
+  REPORT
+  5
+  00
+  5
+  -1
+  REPEAT
+
+TWIN SHADOW:
+  SHADOW_A = observe subject surface
+  SHADOW_B = observe SHADOW_A for drift
+
+RULES:
+  never execute unknown payloads
+  never phone home
+  never mutate source evidence
+  never overclaim without evidence
+  fold uncertainty to 00
+  fold boundary bleed to -1
+
+STATE MAP:
+  5  = normal coherence
+  00 = containment pocket
+  -1 = safe hold / human review
+
+LOOP:
+  read local signal
+  hash evidence
+  score pressure
+  explain reason
+  twin-check the report
+  choose 5 / 00 / -1
+  export or repeat

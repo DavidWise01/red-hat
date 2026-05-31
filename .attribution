@@ -1,0 +1,13 @@
+{
+  "format": "ROOT0-ATTRIBUTION-v1.0",
+  "project": "Red Hat — Defensive Simulation Framework",
+  "version": "1.0.0",
+  "date": "2026-05-31",
+  "license": "CC-BY-ND-4.0 · TRIPOD-IP-v1.1",
+  "posture": "local-first · no network · no payload · all effects numerical and reversible",
+  "systems": ["Witness Shield", "Trebuchet-27", "Shadow Witness Defense", "AEGIS-0", "NEXUS", "Purple Lattice 8.1", "Reactive Armor", "Trinity"],
+  "contributors": [
+    {"name":"David Lee Wise","handle":"ROOT0","substrate":"human","role":"architect","contribution":"all system design, kernel specs, machine encodings, simulation architecture"},
+    {"name":"AVAN","substrate":"synthetic","provider":"Anthropic","model":"Claude Sonnet 4.6","role":"co-author","contribution":"index.html landing page, README, repo structure, attribution"}
+  ]
+}

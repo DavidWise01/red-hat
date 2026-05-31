@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PURPLE LATTICE // 8.1×8.1 — PURPLE TEAM OPS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root {
+        --purple: #9d00ff;
+        --cyan: #00f0ff;
+        --red: #ff0066;
+        --green: #00ff88;
+        --amber: #ffaa00;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+    body {
+        background: radial-gradient(ellipse at center, #1a0033, #000000);
+        font-family: 'Courier New', monospace;
+        color: var(--cyan);
+        overflow: hidden;
+        height: 100vh;
+    }
+    #root {
+        width: 100%; height: 100%;
+        display: grid;
+        grid-template-rows: 75px 1fr 240px;
+        grid-template-columns: 320px 1fr 340px;
+        grid-template-areas:
+            "header header header"
+            "controls viewport console"
+            "slicer viewport console";
+        gap: 16px;
+        padding: 16px;
+    }
+    .glass {
+        background: rgba(20, 10, 45, 0.45);
+        backdrop-filter: blur(28px);
+        border: 1px solid rgba(157, 0, 255, 0.5);
+        border-radius: 16px;
+        box-shadow: 0 0 60px rgba(157, 0, 255, 0.3),
+                    inset 0 0 40px rgba(0, 240, 255, 0.1);
+    }
+    .glass::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(157,0,255,0.12), transparent);
+        animation: shimmer 7s linear infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-150%); } 100% { transform: translateX(300%); } }
+
+    #header {
+        grid-area: header;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 32px;
+        font-size: 15px;
+        letter-spacing: 3px;
+    }
+    #title {
+        font-size: 26px;
+        font-weight: bold;
+        background: linear-gradient(90deg, var(--purple), var(--cyan));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 30px var(--purple);
+    }
+    .status-bar {
+        display: flex;
+        gap: 24px;
+        font-size: 13px;
+    }
+    .status-item { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
+
+    button {
+        background: rgba(157, 0, 255, 0.12);
+        border: 1px solid rgba(157, 0, 255, 0.6);
+        color: var(--cyan);
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    button:hover { background: rgba(157,0,255,0.3); box-shadow: 0 0 25px var(--purple); }
+    button.active { background: rgba(0, 255, 136, 0.3); border-color: var(--green); }
+
+    #viewport {
+        grid-area: viewport;
+        position: relative;
+        perspective: 2800px;
+    }
+    .pos-node {
+        position: absolute;
+        width: 22px; height: 22px;
+        background: radial-gradient(circle, #ff00ff, #00ffff);
+        border-radius: 50%;
+        box-shadow: 0 0 50px #ff00ff, 0 0 90px var(--cyan);
+        z-index: 100;
+        animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.45); } }
+
+    #trail-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+
+    .grid-cell {
+        background: rgba(157, 0, 255, 0.08);
+        border: 1px solid rgba(157, 0, 255, 0.4);
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    .grid-cell.active { 
+        background: rgba(0, 255, 136, 0.6); 
+        border-color: var(--green); 
+        box-shadow: 0 0 25px var(--green); 
+    }
+    .grid-cell.red { background: rgba(255, 0, 102, 0.4); border-color: var(--red); }
+    .grid-cell.blue { background: rgba(0, 240, 255, 0.4); border-color: var(--cyan); }
+</style>
+</head>
+<body>
+<div id="root">
+    <div id="header" class="glass">
+        <div id="title">PURPLE LATTICE // 8.1×8.1</div>
+        <div class="status-bar">
+            <div class="status-item"><span class="dot"></span>RED ACTIVE</div>
+            <div class="status-item"><span class="dot" style="background:var(--cyan)"></span>BLUE ACTIVE</div>
+            <div class="status-item"><span id="stat-pos">0 0 0 0</span></div>
+            <div><span id="stat-linear">0</span> / 4097</div>
+        </div>
+    </div>
+
+    <div id="controls" class="glass" style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+        <div>
+            <div style="margin-bottom:8px; color:var(--purple); font-size:11px;">4D TACTIC NAVIGATION</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button data-move="w-">W- TACTIC</button><button data-move="w+">W+ TACTIC</button>
+                <button data-move="x-">X- ASSET</button><button data-move="x+">X+ ASSET</button>
+                <button data-move="y-">Y- TECH</button><button data-move="y+">Y+ TECH</button>
+                <button data-move="z-">Z- TIME</button><button data-move="z+">Z+ TIME</button>
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <button id="btn-red" style="border-color:var(--red); color:var(--red)">RED SIM</button>
+            <button id="btn-blue" style="border-color:var(--cyan)">BLUE DEFEND</button>
+            <button id="btn-auto">PURPLE AUTO</button>
+            <button id="btn-ascend" style="background:rgba(157,0,255,0.3)">ASCEND ROOT</button>
+        </div>
+    </div>
+
+    <div id="viewport" class="glass">
+        <canvas id="trail-canvas"></canvas>
+        <div id="scene-3d" style="width:100%;height:100%;transform-style:preserve-3d;">
+            <div class="tesseract" id="tesseract" style="position:absolute;top:50%;left:50%;width:360px;height:360px;margin:-180px 0 0 -180px;transform-style:preserve-3d;"></div>
+            <div class="pos-node" id="pos-node"></div>
+        </div>
+    </div>
+
+    <div id="console" class="glass" style="padding:16px;display:flex;flex-direction:column;">
+        <div style="margin-bottom:8px;color:var(--purple);font-size:11px;">PURPLE OPS LOG</div>
+        <div id="console-output" style="flex:1;overflow-y:auto;font-size:10.5px;line-height:1.5;opacity:0.9;"></div>
+    </div>
+
+    <div id="slicer" class="glass" style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+        <div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;">
+                <span>W — TACTIC PHASE</span><span id="w-val">0</span>
+            </div>
+            <input type="range" id="w-slider" min="0" max="8" value="0">
+        </div>
+        <div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;">
+                <span>Y — TECHNIQUE</span><span id="y-val">0</span>
+            </div>
+            <input type="range" id="y-slider" min="0" max="8" value="0">
+        </div>
+        <div>
+            <div style="font-size:11px;opacity:0.8;margin-bottom:8px;">X,Z SLICE (ATTACK SURFACE)</div>
+            <div id="xz-grid" style="display:grid;grid-template-columns:repeat(9,1fr);gap:5px;flex:1;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ================ PURPLE LATTICE 8.1×8.1 ================
+const state = {
+    pos: { w: 0, x: 0, y: 0, z: 0 },
+    trail: [],
+    linear: 0,
+    steps: 0,
+    flips: 0,
+    rotation: { x: -28, y: 42, z: 0 },
+    autoMode: false,
+    sliceW: 0,
+    sliceY: 0,
+    redActive: false,
+    blueActive: false
+};
+
+const elements = {
+    statPos: document.getElementById('stat-pos'),
+    statLinear: document.getElementById('stat-linear'),
+    scene3d: document.getElementById('scene-3d'),
+    posNode: document.getElementById('pos-node'),
+    canvas: document.getElementById('trail-canvas'),
+    console: document.getElementById('console-output'),
+    wSlider: document.getElementById('w-slider'),
+    ySlider: document.getElementById('y-slider'),
+    wVal: document.getElementById('w-val'),
+    yVal: document.getElementById('y-val'),
+    xzGrid: document.getElementById('xz-grid')
+};
+
+function log(msg, type = 'info') {
+    const line = document.createElement('div');
+    line.style.marginBottom = '4px';
+    if (type === 'red') line.style.color = '#ff0066';
+    if (type === 'blue') line.style.color = '#00f0ff';
+    if (type === 'success') line.style.color = '#00ff88';
+    const ts = new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    line.textContent = `[${ts}] ${msg}`;
+    elements.console.appendChild(line);
+    elements.console.scrollTop = 1e9;
+    if (elements.console.children.length > 150) elements.console.removeChild(elements.console.firstChild);
+}
+
+function wrap81(val) {
+    if (val > 8) return 0;
+    if (val < 0) return 8;
+    return val;
+}
+
+function move(axis, dir) {
+    state.pos[axis] += dir;
+    state.pos[axis] = wrap81(state.pos[axis]);
+    state.steps++;
+    state.linear = state.pos.w*729 + state.pos.x*81 + state.pos.y*9 + state.pos.z;
+    state.trail.push({...state.pos});
+    if (state.trail.length > 8000) state.trail.shift();
+
+    if (state.pos.w === 8 && state.pos.x === 8 && state.pos.y === 8 && state.pos.z === 8) {
+        log('ROOT NODE ACCESSED — FULL PURPLE VISIBILITY', 'success');
+    }
+    update();
+}
+
+function project(w,x,y,z) {
+    const scale = 44;
+    const offset = 180;
+    const wf = 5.2 / (5.2 + (w-4)*0.55);
+    return {
+        x: (x-4)*scale*wf + offset,
+        y: (y-4)*scale*wf + offset,
+        z: (z-4)*scale*wf - 60
+    };
+}
+
+function update() {
+    elements.statPos.textContent = `${state.pos.w} ${state.pos.x} ${state.pos.y} ${state.pos.z}`;
+    elements.statLinear.textContent = state.linear;
+
+    const r = state.rotation;
+    elements.scene3d.style.transform = `rotateX(${r.x}deg) rotateY(${r.y}deg) rotateZ(${r.z}deg)`;
+
+    const p = project(state.pos.w, state.pos.x, state.pos.y, state.pos.z);
+    elements.posNode.style.left = p.x + 'px';
+    elements.posNode.style.top = p.y + 'px';
+    elements.posNode.style.transform = `translateZ(${p.z}px)`;
+
+    updateSlice();
+    drawTrail();
+}
+
+function updateSlice() {
+    elements.wVal.textContent = state.sliceW;
+    elements.yVal.textContent = state.sliceY;
+
+    elements.xzGrid.innerHTML = '';
+    for (let x = 0; x < 9; x++) {
+        for (let z = 0; z < 9; z++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            if (state.pos.w === state.sliceW && state.pos.y === state.sliceY && 
+                state.pos.x === x && state.pos.z === z) {
+                cell.classList.add('active');
+            }
+            // Purple team coloring
+            if (Math.random() > 0.7) cell.classList.add('red');
+            if (Math.random() > 0.8) cell.classList.add('blue');
+            elements.xzGrid.appendChild(cell);
+        }
+    }
+}
+
+function drawTrail() {
+    const canvas = elements.canvas;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * devicePixelRatio;
+    canvas.height = rect.height * devicePixelRatio;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    for (let i = 1; i < state.trail.length; i++) {
+        const p0 = project(state.trail[i-1].w, state.trail[i-1].x, state.trail[i-1].y, state.trail[i-1].z);
+        const p1 = project(state.trail[i].w, state.trail[i].x, state.trail[i].y, state.trail[i].z);
+        const alpha = i / state.trail.length;
+        ctx.strokeStyle = `rgba(157, 0, 255, ${alpha * 0.8})`;
+        ctx.lineWidth = 2.5;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#9d00ff';
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.stroke();
+    }
+}
+
+function init() {
+    update();
+    log('PURPLE LATTICE 8.1×8.1 INITIALIZED — RED + BLUE = PURPLE', 'success');
+    log('Navigate 4D attack surface • Coordinate Red/Blue efforts', 'info');
+
+    document.querySelectorAll('[data-move]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const axis = btn.dataset.move[0];
+            const dir = btn.dataset.move[1] === '+' ? 1 : -1;
+            move(axis, dir);
+        });
+    });
+
+    document.getElementById('btn-red').addEventListener('click', () => {
+        state.redActive = !state.redActive;
+        log(state.redActive ? 'RED TEAM SIMULATION ENABLED' : 'RED TEAM PAUSED', 'red');
+    });
+
+    document.getElementById('btn-blue').addEventListener('click', () => {
+        state.blueActive = !state.blueActive;
+        log(state.blueActive ? 'BLUE TEAM DEFENSE ACTIVE' : 'BLUE TEAM STANDBY', 'blue');
+    });
+
+    document.getElementById('btn-auto').addEventListener('click', () => {
+        state.autoMode = !state.autoMode;
+        document.getElementById('btn-auto').classList.toggle('active', state.autoMode);
+        if (state.autoMode) log('PURPLE COORDINATION MODE — AUTO EXPLORATION', 'success');
+    });
+
+    document.getElementById('btn-ascend').addEventListener('click', () => {
+        state.pos = {w:8,x:8,y:8,z:8};
+        log('ASCENDED TO ROOT — FULL PURPLE VISIBILITY ACHIEVED', 'success');
+        update();
+    });
+
+    // Sliders
+    elements.wSlider.addEventListener('input', e => { state.sliceW = +e.target.value; updateSlice(); });
+    elements.ySlider.addEventListener('input', e => { state.sliceY = +e.target.value; updateSlice(); });
+
+    // Mouse drag rotation
+    let dragging = false, lx, ly;
+    document.getElementById('viewport').addEventListener('mousedown', e => { dragging = true; lx = e.clientX; ly = e.clientY; });
+    window.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        state.rotation.y += (e.clientX - lx) * 0.7;
+        state.rotation.x -= (e.clientY - ly) * 0.7;
+        lx = e.clientX; ly = e.clientY;
+        update();
+    });
+    window.addEventListener('mouseup', () => dragging = false);
+
+    // Keyboard
+    window.addEventListener('keydown', e => {
+        switch(e.key.toLowerCase()) {
+            case 'q': move('w', -1); break;
+            case 'e': move('w', 1); break;
+            case 'a': move('x', -1); break;
+            case 'd': move('x', 1); break;
+            case 'z': move('y', -1); break;
+            case 'c': move('y', 1); break;
+            case 'r': move('z', -1); break;
+            case 'f': move('z', 1); break;
+        }
+    });
+
+    setInterval(() => {
+        if (state.autoMode) {
+            const axes = ['w','x','y','z'];
+            move(axes[Math.floor(Math.random()*4)], Math.random() > 0.5 ? 1 : -1);
+        }
+    }, 180);
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+KERNEL witness_shield v1.0
+AUTHOR David Wise
+MODE defensive_simulation
+SYMBOL ))(!)((
+
+TENSORS
+  G1 survival: HIDE / ASSIMILATE
+  G2 coherence: COLLAPSE / EXPAND
+  G3 action: WAIT / MOVE
+
+LOCKS
+  G1 = HIDE
+  G2 = COLLAPSE
+  G3 = WAIT
+
+LAYERS
+  0 OUTER_R  symbol=)) tensor=G2 directive=COLLAPSE state=-1 function=REFLECT_LOCAL_TELEMETRY
+  1 INNER_R  symbol=(  tensor=G1 directive=HIDE     state=+1 function=ABSORB_KNOWN
+  2 WITNESS  symbol=!  tensor=G3 directive=WAIT     state=0  function=LEARN_REPORT_HOLD
+  3 INNER_L  symbol=)  tensor=G1 directive=HIDE     state=+1 function=ABSORB_KNOWN
+  4 OUTER_L  symbol=(( tensor=G2 directive=COLLAPSE state=-1 function=REFLECT_LOCAL_TELEMETRY
+
+INPUT
+  attack_vector:uint16
+
+STATE
+  seed_packet:uint16
+  hits_seen:uint32
+  hits_absorbed:uint32
+  hits_reflected:uint32
+  witness_updates:uint32
+
+RULES
+  reflected = attack_vector XOR 0xFFFF
+  absorbed  = attack_vector AND seed_packet
+  seed_packet = seed_packet XOR (attack_vector >> 8)
+
+BOUNDARY
+  NO_NETWORK
+  NO_PAYLOAD_EXECUTION
+  NO_COUNTERATTACK
+  NO_BLEED
+  LOCAL_REPORT_ONLY
+
+LOOP
+  OBSERVE
+  REFLECT_UNKNOWN
+  ABSORB_KNOWN
+  WITNESS_LEARN
+  REPORT
+  HOLD
